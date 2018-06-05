@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">ChatRoot</string>
+    <string name="app_name">萌聊</string>
+    <string name="btn_string">点击开始语音识别</string>
 </resources>

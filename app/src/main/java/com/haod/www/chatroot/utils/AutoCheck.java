@@ -1,4 +1,4 @@
-package com.haod.www.chatroot;
+package com.haod.www.chatroot.utils;
 
 import android.Manifest;
 import android.content.Context;

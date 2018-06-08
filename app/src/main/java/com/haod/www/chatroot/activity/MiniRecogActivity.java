@@ -1,4 +1,4 @@
-package com.haod.www.chatroot;
+package com.haod.www.chatroot.activity;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -17,6 +17,8 @@ import com.baidu.speech.EventListener;
 import com.baidu.speech.EventManager;
 import com.baidu.speech.EventManagerFactory;
 import com.baidu.speech.asr.SpeechConstant;
+import com.haod.www.chatroot.R;
+import com.haod.www.chatroot.utils.AutoCheck;
 
 import org.json.JSONObject;
 
@@ -205,4 +207,6 @@ public class MiniRecogActivity extends AppCompatActivity implements EventListene
         // 此处为android 6.0以上动态授权的回调，用户自行实现。
     }
 
+    public void onClick(View view) {
+    }
 }

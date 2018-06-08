@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">萌聊</string>
     <string name="btn_string">点击开始语音识别</string>
+    <string name="btn_start">开始</string>
+    <string name="btn_stop">停止</string>
+    <string name="this_is_the_word_which_i_want_to_say">This is the word which i want to say</string>
+    <string name="send">Send</string>
 </resources>

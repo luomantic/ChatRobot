@@ -1,8 +1,8 @@
 package com.haod.www.chatroot.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -49,6 +49,10 @@ public class MainActivity extends AppCompatActivity {
         listView = findViewById(R.id.content_list);
         btn_send = findViewById(R.id.btn_send);
         et_send = findViewById(R.id.et_input);
+
+//        startActivity(new Intent(MainActivity.this, MiniRecogActivity.class));
+        startActivity(new Intent(MainActivity.this, AsrTestActivity.class));
+        this.finish();
 
         listView.setVerticalScrollBarEnabled(false);
         startSendButtonClick();

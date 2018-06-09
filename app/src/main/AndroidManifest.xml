@@ -29,7 +29,6 @@
             android:name="com.baidu.speech.SECRET_KEY"
             android:value="Oe5TjDadX5jIwqHBMP4IlUoiB3d6W4vK " />
 
-        <!-- 请确认集成后的包名是否正确，本demo的包名是com.baidu.speech.recognizerdemo，在build.gradle文件中查看 -->
         <service
             android:name="com.baidu.speech.VoiceRecognitionService"
             android:exported="false" />
@@ -41,6 +40,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".activity.MiniRecogActivity" />
+        <activity android:name=".activity.AsrTestActivity" />
+
     </application>
 
 </manifest>

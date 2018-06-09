@@ -5,6 +5,8 @@ import com.haod.www.chatroot.base.Translation;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface GetRequest_Interface {
 
@@ -14,5 +16,8 @@ public interface GetRequest_Interface {
     // 如果想直接获得Responsebody中的内容，可以定义网络请求返回值为Call<ResponseBody>
     @GET("api?key=80aa4127a6c340da8b6841db0edd78c5&info=nihao")
     Call<Translation> getCall();
+
+    @GET("api?key=80aa4127a6c340da8b6841db0edd78c5&")
+    Call<Translation> getCall(@Query("info")String info);
 
 }

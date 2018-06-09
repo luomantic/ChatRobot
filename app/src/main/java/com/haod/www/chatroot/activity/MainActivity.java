@@ -16,19 +16,17 @@ import android.widget.TextView;
 
 import com.haod.www.chatroot.Constant;
 import com.haod.www.chatroot.R;
+import com.haod.www.chatroot.base.TalkBean;
 import com.haod.www.chatroot.base.Translation;
 import com.haod.www.chatroot.base.impl.GetRequest_Interface;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.GET;
-
-import static com.haod.www.chatroot.Constant.test_api_base;
 
 public class MainActivity extends AppCompatActivity {
     private ListView listView;
@@ -36,8 +34,11 @@ public class MainActivity extends AppCompatActivity {
     private EditText et_send;
 
     private String askMsg;
-    private String request_url;
-    private String test_api;
+
+    private Call<Translation> call;
+
+    private ArrayList<TalkBean> talkBeans = new ArrayList<>();
+    private TalkListAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,19 +50,24 @@ public class MainActivity extends AppCompatActivity {
         btn_send = findViewById(R.id.btn_send);
         et_send = findViewById(R.id.et_input);
 
+        listView.setVerticalScrollBarEnabled(false);
+        startSendButtonClick();
+    }
+
+    private void startSendButtonClick() {
         btn_send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 askMsg = et_send.getText().toString();
+                et_send.setText("");
 
-                // 将askMsg显示到ListView
-
-                // 将askMsg拼接到字符串，并发送给图灵机器人服务器
-                request_url = Constant.TULING_API_BASE + "&info=" + askMsg;
-                test_api = test_api_base + "repos/square/retrofit/contributors/";
+                // TODO: 把发送的内容显示到ListView中
+                talkBeans.add(new TalkBean(askMsg, true, -1));
+                adapter = new TalkListAdapter();
+                listView.setAdapter(adapter);
+                listView.setSelection(talkBeans.size() -1);
 
                 request();
-
             }
         });
     }
@@ -77,13 +83,18 @@ public class MainActivity extends AppCompatActivity {
         GetRequest_Interface request_interface = retrofit.create(GetRequest_Interface.class);
 
         // 对发送请求进行封装
-        Call<Translation> call = request_interface.getCall();
+        call = request_interface.getCall(askMsg);
 
         // 发送网络请求（异步）
         call.enqueue(new Callback<Translation>() {
             @Override
             public void onResponse(Call<Translation> call, Response<Translation> response) {
-                Log.e(Constant.TAG, "response.body(): " + response.body().getText());
+                String answer = response.body().getText();
+
+                // TODO：获取到信息之后，让获取到的text，显示在ListView上
+                talkBeans.add(new TalkBean(answer, false, -1));
+                adapter.notifyDataSetChanged();
+                listView.setSelection(talkBeans.size() -1);
             }
 
             @Override
@@ -93,32 +104,27 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void showResponse() {
-
-    }
-
-
     @Override
     protected void onStop() {
         super.onStop();
-//        call.cancel;
+        call.cancel();
     }
 
-    class VoiceAdapter extends BaseAdapter {
+    class TalkListAdapter extends BaseAdapter {
 
         @Override
         public int getCount() {
-            return 0;
+            return talkBeans.size();
         }
 
         @Override
-        public Object getItem(int position) {
-            return position;
+        public TalkBean getItem(int position) {
+            return talkBeans.get(position);
         }
 
         @Override
         public long getItemId(int position) {
-            return 0;
+            return position;
         }
 
         @Override
@@ -137,11 +143,31 @@ public class MainActivity extends AppCompatActivity {
                 holder = (ViewHolder) convertView.getTag();
             }
 
+            TalkBean item = getItem(position);
+            if (item.isAsk) {
+                holder.tvAsk.setVisibility(View.VISIBLE);
+                holder.llAnswer.setVisibility(View.GONE);
+
+                holder.tvAsk.setText(item.talk_content);
+            } else {
+                holder.tvAsk.setVisibility(View.GONE);
+                holder.llAnswer.setVisibility(View.VISIBLE);
+
+                holder.tvAnswer.setText(item.talk_content);
+
+                if (item.imageId > 0) {
+                    holder.ivAnswer.setVisibility(View.VISIBLE);
+                    holder.ivAnswer.setImageResource(item.imageId);
+                } else {
+                    holder.ivAnswer.setVisibility(View.GONE);
+                }
+            }
+
             return convertView;
         }
     }
 
-    static class ViewHolder {
+    private static class ViewHolder {
         private TextView tvAsk;
         private TextView tvAnswer;
         private ImageView ivAnswer;

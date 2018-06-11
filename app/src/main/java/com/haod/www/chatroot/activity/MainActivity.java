@@ -1,8 +1,10 @@
 package com.haod.www.chatroot.activity;
 
-import android.content.Intent;
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -19,6 +21,8 @@ import com.haod.www.chatroot.R;
 import com.haod.www.chatroot.base.TalkBean;
 import com.haod.www.chatroot.base.Translation;
 import com.haod.www.chatroot.base.impl.GetRequest_Interface;
+import com.haod.www.chatroot.tools.SpeechRecTool;
+import com.haod.www.chatroot.tools.SpeechSynTools;
 
 import java.util.ArrayList;
 
@@ -28,18 +32,19 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SpeechRecTool.ResultsCallback {
     private ListView listView;
-    private Button btn_send;
-    private EditText et_send;
-
-    private String askMsg;
+    private Button button;
 
     private Call<Translation> call;
 
     private ArrayList<TalkBean> talkBeans = new ArrayList<>();
     private TalkListAdapter adapter;
 
+    private SpeechRecTool speechRecTool = new SpeechRecTool(this);
+
+
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,36 +52,53 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         listView = findViewById(R.id.content_list);
-        btn_send = findViewById(R.id.btn_send);
-        et_send = findViewById(R.id.et_input);
+        button = findViewById(R.id.button_lis);
 
-//        startActivity(new Intent(MainActivity.this, MiniRecogActivity.class));
-        startActivity(new Intent(MainActivity.this, AsrTestActivity.class));
-        this.finish();
-
-        listView.setVerticalScrollBarEnabled(false);
-        startSendButtonClick();
-    }
-
-    private void startSendButtonClick() {
-        btn_send.setOnClickListener(new View.OnClickListener() {
+        button.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onClick(View v) {
-                askMsg = et_send.getText().toString();
-                et_send.setText("");
-
-                // TODO: 把发送的内容显示到ListView中
-                talkBeans.add(new TalkBean(askMsg, true, -1));
-                adapter = new TalkListAdapter();
-                listView.setAdapter(adapter);
-                listView.setSelection(talkBeans.size() -1);
-
-                request();
+            public boolean onTouch(View v, MotionEvent event) {
+                int action = event.getAction();
+                switch (action) {
+                    case MotionEvent.ACTION_DOWN:
+                        speechRecTool.startASR(MainActivity.this);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        speechRecTool.stopASR();
+                        break;
+                    default:
+                        return false;
+                }
+                return false;
             }
         });
+
     }
 
-    public void request(){
+    @Override
+    protected void onStart() {
+        super.onStart();
+        speechRecTool.createTool();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        call.cancel();
+        speechRecTool.destroyTool();
+    }
+
+    @Override
+    public void onResults(String result) {
+        // TODO: 把发送的内容显示到ListView中
+        talkBeans.add(new TalkBean(result, true, -1));
+        adapter = new TalkListAdapter();
+        listView.setAdapter(adapter);
+        listView.setSelection(talkBeans.size() -1);
+
+        request(result);
+    }
+
+    public void request(String askMsg){
         // 创建Retrofit对象
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(Constant.TULING_API_BASE) // 设置网络请求的基本url
@@ -98,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
                 // TODO：获取到信息之后，让获取到的text，显示在ListView上
                 talkBeans.add(new TalkBean(answer, false, -1));
                 adapter.notifyDataSetChanged();
+                SpeechSynTools.getInstance().speak(answer);
                 listView.setSelection(talkBeans.size() -1);
             }
 
@@ -106,12 +129,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        call.cancel();
     }
 
     class TalkListAdapter extends BaseAdapter {
